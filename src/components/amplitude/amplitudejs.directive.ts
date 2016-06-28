@@ -33,9 +33,6 @@ module AngularAmplitudejs {
       }}for(var n=0;n<d.length;n++){t(d[n])}}v(n);n.getInstance=function(e){e=(!e||e.length===0?"$default_instance":e).toLowerCase();
       if(!n._iq.hasOwnProperty(e)){n._iq[e]={_q:[]};v(n._iq[e])}return n._iq[e]};e.amplitude=n;
       })(window,document);
-      console.log("amplitude.getInstance().init");
-      window.amplitude.getInstance().init("80670c002958c669424d60a2a2c852e2");
-      window.amplitude.getInstance().logEvent('Test from directive');
       `;
       document.head.appendChild(s);
     }
@@ -55,19 +52,20 @@ module AngularAmplitudejs {
     }
 
     link = (scope: ng.IScope, element: ng.IAugmentedJQuery, $window: ng.IWindowService) => {
-      if ($window['google'] && $window['google'].maps) {
-        console.log('gmaps already loaded');
+      scope.$watch(($window['amplitude'], () => {
+        if ($window['amplitude'] === undefined) {
+          return;
+        }
+        console.log('$watch amplitude loaded'+typeof($window['amplitude']));
+        console.log('$watch amplitude loaded'+typeof($window['amplitude'].getInstance));
+        console.log("amplitude.getInstance().init "+scope['apikey']);
+    //        $window['amplitude'].getInstance().init(this.apikey);
+  }));
+
+      if ($window['amplitude']) {
+        console.log('amplitude already loaded');
       } else {
-        this.lazyLoadApi().then(function() {
-          console.log('promise resolved');
-          if ($window['google'] && $window['google'].maps) {
-            console.log('gmaps loaded');
-          } else {
-            console.log('gmaps not loaded');
-          }
-        }, function() {
-          console.log('promise rejected');
-        });
+        this.lazyLoadApi().then(() => { console.log('loaded ...');}, (reason) => {console.log('ERROR: '+JSON.stringify(reason))}, (update) => { console.log('UPDATE')});
       }
     }
 
@@ -77,6 +75,8 @@ module AngularAmplitudejs {
   export class AmplitudejsService {
     static $inject = ['$window'];
     private $window: ng.IWindowService;
+    private queue: string[] = [];
+    private apikey: string;
 
     constructor($window: ng.IWindowService) {
       var vm = this;
@@ -86,17 +86,31 @@ module AngularAmplitudejs {
       return "gregorifaroux@gmail.com";
     }
 
+    public setApikey(key:string): void {
+      this.apikey = key;
+    }
+
     public init(apikey: string) {
       console.log('AmplitudejsService.init ' + apikey);
       this.$window['amplitude'].init(apikey, null);
     }
 
     public logEvent(event: string) {
-      console.log('Amplitude.logevent ' + event + ' ' + this.$window + ' this.initialized = ' + this.$window['amplitude']);
+      console.log('Amplitude.logevent ' + event + ' queue:' + this.queue.length);
       if (this.$window['amplitude']) {
+        if (this.queue.length > 0 ) {
+          this.init(this.apikey);
+          var i = this.queue.length
+          while (i--) {
+            console.log('queue: ' + this.queue[i]);
+            this.$window['amplitude'].logEvent(this.queue.splice(i, 1)[0]);
+          }
+        }
+        console.log('send: ' + event);
         this.$window['amplitude'].logEvent(event);
       } else {
-        console.warn('Amplitude not loaded yet');
+        console.warn('Amplitude not loaded yet ... queued');
+        this.queue.push(event);
       }
     }
 
@@ -120,6 +134,7 @@ module AngularAmplitudejs {
       var vm = this;
       vm.apikey = $attrs['apikey'];
       vm.$window = $window;
+      api.setApikey(vm.apikey);
 
 
     }

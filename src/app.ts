@@ -1,3 +1,4 @@
+/// <reference path="../typings/main/ambient/jquery/index.d.ts" />
 /// <reference path="../typings/globals/angular/index.d.ts" />
 
 module app {
