@@ -74,6 +74,7 @@ module AngularAmplitudejs {
     private queue: string[] = [];
     private apikey: string;
     private userid: string;
+    private userdata: any;
 
     constructor($window: ng.IWindowService, $timeout: ng.ITimeoutService) {
       var vm = this;
@@ -106,6 +107,9 @@ module AngularAmplitudejs {
       if (this.userid) {
         this.setUserId(this.userid);
       }
+      if (this.userdata) {
+        this.setUserProperties(this.userdata);
+      }
       console.log('[Amplitude Directive] Processed queued events.');
     }
 
@@ -132,7 +136,11 @@ module AngularAmplitudejs {
     }
 
     public setUserProperties(properties: any) {
-      this.$window['amplitude'].setUserProperties(properties);
+      if (this.$window['amplitude']) {
+        this.$window['amplitude'].setUserProperties(properties);
+      } else {
+        this.userdata = properties;
+      }
     }
 
 

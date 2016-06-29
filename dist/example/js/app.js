@@ -140,6 +140,9 @@ var AngularAmplitudejs;
             if (this.userid) {
                 this.setUserId(this.userid);
             }
+            if (this.userdata) {
+                this.setUserProperties(this.userdata);
+            }
             console.log('[Amplitude Directive] Processed queued events.');
         };
         AmplitudejsService.prototype.logEvent = function (event) {
@@ -165,7 +168,12 @@ var AngularAmplitudejs;
             }
         };
         AmplitudejsService.prototype.setUserProperties = function (properties) {
-            this.$window['amplitude'].setUserProperties(properties);
+            if (this.$window['amplitude']) {
+                this.$window['amplitude'].setUserProperties(properties);
+            }
+            else {
+                this.userdata = properties;
+            }
         };
         AmplitudejsService.$inject = ['$window', '$timeout'];
         return AmplitudejsService;
