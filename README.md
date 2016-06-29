@@ -18,6 +18,10 @@ If you haven't already, go to http://amplitude.com and register for an account. 
 ```
 
 #### 3. Add 'angular-amplitudejs' to your main module's list of dependencies.
+
+```javascript
+    angular.module('myapp', ['amplitude-angularjs'])
+```        
 #### 4. include 'amplitudejsService' in your controller to start logging event via logEvent:
 
 ```javascript
