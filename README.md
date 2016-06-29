@@ -5,20 +5,20 @@ This is a directive wrapper for Amplitude's Javascript SDK. There is a working e
 ## Usage
 In your HTML, includes the library after including the angular library:
 
-```
+```javascript
 <script src="lib/amplitude.directive.js">
 ```
 
 In the header of your HTML, you can drop the tag with your API Key. If you haven't already, go to http://amplitude.com and register for an account. You will receive an API Key.
 
-```
+```html
 <head>
   <amplitudejs apikey="YOUR API KEY"></amplitudejs>
 ```
 
 Add 'angular-amplitudejs' to your main module's list of dependencies and include 'amplitudejsService' in your controller to start logging event:
 
-```
+```javascript
   var Page1Controller = (function () {
         function Page1Controller(amplitudejs) {
             console.log("page1 constructor... calling logEvent");
