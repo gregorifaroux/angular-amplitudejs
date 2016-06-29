@@ -1,3 +1,5 @@
+/// <reference path="../../typings/globals/jquery/index.d.ts" />
+/// <reference path="../../typings/globals/angular/index.d.ts" />
 
 module AngularAmplitudejs {
   export class AmplitudejsDirective implements ng.IDirective {
@@ -56,15 +58,9 @@ module AngularAmplitudejs {
         if ($window['amplitude'] === undefined) {
           return;
         }
-        console.log('$watch amplitude loaded'+typeof($window['amplitude']));
-        console.log('$watch amplitude loaded'+typeof($window['amplitude'].getInstance));
-        console.log("amplitude.getInstance().init "+scope['apikey']);
-    //        $window['amplitude'].getInstance().init(this.apikey);
   }));
 
-      if ($window['amplitude']) {
-        console.log('amplitude already loaded');
-      } else {
+      if (!$window['amplitude']) {
         this.lazyLoadApi().then(() => { console.log('loaded ...');}, (reason) => {console.log('ERROR: '+JSON.stringify(reason))}, (update) => { console.log('UPDATE')});
       }
     }
@@ -73,17 +69,21 @@ module AngularAmplitudejs {
 
 
   export class AmplitudejsService {
-    static $inject = ['$window'];
+    static $inject = ['$window', '$timeout'];
     private $window: ng.IWindowService;
     private queue: string[] = [];
     private apikey: string;
+    private userid: string;
 
-    constructor($window: ng.IWindowService) {
+    constructor($window: ng.IWindowService, $timeout: ng.ITimeoutService) {
       var vm = this;
       vm.$window = $window;
-    }
-    public getUsername(): String {
-      return "gregorifaroux@gmail.com";
+      // Process the events and setUserId queue using a timeout. The second safe guard is at each logEvent we check the queue
+      $timeout(() => {
+        if (this.$window['amplitude']) {
+          this.processQueue();
+        }
+      }, 3000);
     }
 
     public setApikey(key:string): void {
@@ -91,31 +91,44 @@ module AngularAmplitudejs {
     }
 
     public init(apikey: string) {
-      console.log('AmplitudejsService.init ' + apikey);
       this.$window['amplitude'].init(apikey, null);
     }
 
+    /**
+    * Process all the events and setUserId that have been queued as the library was not loaded yet
+    */
+    private processQueue() {
+      this.init(this.apikey);
+      var i = this.queue.length
+      while (i--) {
+        this.$window['amplitude'].logEvent(this.queue.splice(i, 1)[0]);
+      }
+      if (this.userid) {
+        this.setUserId(this.userid);
+      }
+      console.log('[Amplitude Directive] Processed queued events.');
+    }
+
     public logEvent(event: string) {
-      console.log('Amplitude.logevent ' + event + ' queue:' + this.queue.length);
+      console.log('[Amplitude Directive] logevent ' + event);
       if (this.$window['amplitude']) {
+        // Second safeguard, check if we have a queue of events.
         if (this.queue.length > 0 ) {
-          this.init(this.apikey);
-          var i = this.queue.length
-          while (i--) {
-            console.log('queue: ' + this.queue[i]);
-            this.$window['amplitude'].logEvent(this.queue.splice(i, 1)[0]);
-          }
+          this.processQueue();
         }
-        console.log('send: ' + event);
         this.$window['amplitude'].logEvent(event);
       } else {
-        console.warn('Amplitude not loaded yet ... queued');
+        console.warn('[Amplitude Directive] Amplitude not yet available ... adding event to queue.');
         this.queue.push(event);
       }
     }
 
     public setUserId(userid: string) {
-      this.$window['amplitude'].setUserId(userid);
+      if (this.$window['amplitude']) {
+        this.$window['amplitude'].setUserId(userid);
+      } else {
+        this.userid = userid;
+      }
     }
 
     public setUserProperties(properties: any) {

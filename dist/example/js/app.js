@@ -1,22 +1,57 @@
-/// <reference path="../typings/main/ambient/jquery/index.d.ts" />
-/// <reference path="../typings/globals/angular/index.d.ts" />
+/// <reference path="../../typings/globals/jquery/index.d.ts" />
+/// <reference path="../../typings/globals/angular-ui-router/index.d.ts" />
+/// <reference path="../../typings/globals/angular/index.d.ts" />
 var app;
 (function (app) {
     'use strict';
     console.log('app.ts ... started!');
-    angular.module('amplitudejsdemo', ['angular-amplitudejs']);
+    angular.module('amplitudejsdemo', ['angular-amplitudejs', 'ui.router'])
+        .config(['$stateProvider', '$urlRouterProvider',
+        function routes($stateProvider, $routerProvider) {
+            $routerProvider.otherwise('/page1');
+            $stateProvider
+                .state('page1', {
+                url: '/page1',
+                template: "<h1>Page 1</h1>",
+                controller: Page1Controller
+            })
+                .state('page2', {
+                url: '/page2',
+                template: "<h1>Page 2</h1>",
+                controller: Page2Controller
+            });
+        }
+    ]);
+    var Page1Controller = (function () {
+        function Page1Controller(amplitudejs) {
+            console.log("page1 constructor... calling logEvent");
+            amplitudejs.logEvent('Page1');
+        }
+        Page1Controller.$inject = ['amplitudejsService'];
+        return Page1Controller;
+    }());
+    ;
+    var Page2Controller = (function () {
+        function Page2Controller(amplitudejs) {
+            console.log("page2 constructor... calling logEvent");
+            amplitudejs.logEvent('Page2');
+        }
+        Page2Controller.$inject = ['amplitudejsService'];
+        return Page2Controller;
+    }());
+    ;
     var HomeController = (function () {
         function HomeController(amplitudejs) {
             var _this = this;
             this.sendEvent = function () {
-                console.log('sendEvent');
-                _this.amplitudejs.logEvent('sendEvent');
+                console.log('Test Custom Event');
+                _this.amplitudejs.logEvent('Test Custom Event');
             };
-            console.log("homeController constructor.");
+            console.log("homeController constructor...");
             var vm = this;
             vm.title = 'AngularJS AmplitudeJS Demo';
             vm.amplitudejs = amplitudejs;
-            console.log('amplitudejs service: ' + amplitudejs.getUsername());
+            amplitudejs.setUserId('test@test.test');
             amplitudejs.logEvent('Test Custom Event');
         }
         HomeController.$inject = ['amplitudejsService'];
@@ -24,6 +59,8 @@ var app;
     }());
     angular.module('amplitudejsdemo').controller('homeController', HomeController);
 })(app || (app = {}));
+/// <reference path="../../typings/globals/jquery/index.d.ts" />
+/// <reference path="../../typings/globals/angular/index.d.ts" />
 var AngularAmplitudejs;
 (function (AngularAmplitudejs) {
     var AmplitudejsDirective = (function () {
@@ -41,15 +78,8 @@ var AngularAmplitudejs;
                     if ($window['amplitude'] === undefined) {
                         return;
                     }
-                    console.log('$watch amplitude loaded' + typeof ($window['amplitude']));
-                    console.log('$watch amplitude loaded' + typeof ($window['amplitude'].getInstance));
-                    console.log("amplitude.getInstance().init " + scope['apikey']);
-                    //        $window['amplitude'].getInstance().init(this.apikey);
                 }));
-                if ($window['amplitude']) {
-                    console.log('amplitude already loaded');
-                }
-                else {
+                if (!$window['amplitude']) {
                     _this.lazyLoadApi().then(function () { console.log('loaded ...'); }, function (reason) { console.log('ERROR: ' + JSON.stringify(reason)); }, function (update) { console.log('UPDATE'); });
                 }
             };
@@ -80,47 +110,64 @@ var AngularAmplitudejs;
     }());
     AngularAmplitudejs.AmplitudejsDirective = AmplitudejsDirective;
     var AmplitudejsService = (function () {
-        function AmplitudejsService($window) {
+        function AmplitudejsService($window, $timeout) {
+            var _this = this;
             this.queue = [];
             var vm = this;
             vm.$window = $window;
+            // Process the events and setUserId queue using a timeout. The second safe guard is at each logEvent we check the queue
+            $timeout(function () {
+                if (_this.$window['amplitude']) {
+                    _this.processQueue();
+                }
+            }, 3000);
         }
-        AmplitudejsService.prototype.getUsername = function () {
-            return "gregorifaroux@gmail.com";
-        };
         AmplitudejsService.prototype.setApikey = function (key) {
             this.apikey = key;
         };
         AmplitudejsService.prototype.init = function (apikey) {
-            console.log('AmplitudejsService.init ' + apikey);
             this.$window['amplitude'].init(apikey, null);
         };
+        /**
+        * Process all the events and setUserId that have been queued as the library was not loaded yet
+        */
+        AmplitudejsService.prototype.processQueue = function () {
+            this.init(this.apikey);
+            var i = this.queue.length;
+            while (i--) {
+                this.$window['amplitude'].logEvent(this.queue.splice(i, 1)[0]);
+            }
+            if (this.userid) {
+                this.setUserId(this.userid);
+            }
+            console.log('[Amplitude Directive] Processed queued events.');
+        };
         AmplitudejsService.prototype.logEvent = function (event) {
-            console.log('Amplitude.logevent ' + event + ' queue:' + this.queue.length);
+            console.log('[Amplitude Directive] logevent ' + event);
             if (this.$window['amplitude']) {
+                // Second safeguard, check if we have a queue of events.
                 if (this.queue.length > 0) {
-                    this.init(this.apikey);
-                    var i = this.queue.length;
-                    while (i--) {
-                        console.log('queue: ' + this.queue[i]);
-                        this.$window['amplitude'].logEvent(this.queue.splice(i, 1)[0]);
-                    }
+                    this.processQueue();
                 }
-                console.log('send: ' + event);
                 this.$window['amplitude'].logEvent(event);
             }
             else {
-                console.warn('Amplitude not loaded yet ... queued');
+                console.warn('[Amplitude Directive] Amplitude not yet available ... adding event to queue.');
                 this.queue.push(event);
             }
         };
         AmplitudejsService.prototype.setUserId = function (userid) {
-            this.$window['amplitude'].setUserId(userid);
+            if (this.$window['amplitude']) {
+                this.$window['amplitude'].setUserId(userid);
+            }
+            else {
+                this.userid = userid;
+            }
         };
         AmplitudejsService.prototype.setUserProperties = function (properties) {
             this.$window['amplitude'].setUserProperties(properties);
         };
-        AmplitudejsService.$inject = ['$window'];
+        AmplitudejsService.$inject = ['$window', '$timeout'];
         return AmplitudejsService;
     }());
     AngularAmplitudejs.AmplitudejsService = AmplitudejsService;

@@ -13,7 +13,7 @@ var reload = browserSync.reload;
 
 
 // create a default task to build the app
-gulp.task('default', ['jade', 'typescript', 'bowerjs', 'bowercss', 'appcss'], function() {
+gulp.task('default', ['jade', 'typescriptlib', 'typescript', 'bowerjs', 'bowercss', 'appcss'], function() {
     return plugins.util.log('App is built!')
 });
 
@@ -29,12 +29,24 @@ gulp.task('jade', function() {
 
 // TYPESCRIPT to JavaScript
 gulp.task('typescript', function() {
-    return gulp.src('src/**/*.ts')
+    return gulp.src(['src/**/*.ts', '!src/lib'])
         .pipe(plugins.typescript({
             noImplicitAny: true,
             out: 'app.js'
         }))
-        .pipe(gulp.dest('dist/js/'))
+        .pipe(gulp.dest('dist/example/js/'))
+        .pipe(browserSync.reload({
+            stream: true
+        }));
+});
+
+gulp.task('typescriptlib', function() {
+    return gulp.src('src/lib/*.ts')
+//    .pipe(plugins.debug())
+        .pipe(plugins.typescript({
+            noImplicitAny: true,
+        }))
+        .pipe(gulp.dest('dist/lib/'))
         .pipe(browserSync.reload({
             stream: true
         }));
@@ -45,26 +57,26 @@ gulp.task('bowerjs', function() {
 
     gulp.src(plugins.mainBowerFiles())
         .pipe(plugins.filter('**/*.js'))
-        .pipe(plugins.debug())
+//        .pipe(plugins.debug())
         .pipe(plugins.concat('vendor.js'))
         .pipe(plugins.uglify())
-        .pipe(gulp.dest('dist/js'));
+        .pipe(gulp.dest('dist/example/js'));
 
 });
 
 gulp.task('bowercss', function() {
     gulp.src(plugins.mainBowerFiles())
         .pipe(plugins.filter('**/*.css'))
-        .pipe(plugins.debug())
+//        .pipe(plugins.debug())
         .pipe(plugins.concat('vendor.css'))
-        .pipe(gulp.dest('dist/css'));
+        .pipe(gulp.dest('dist/example/css'));
 
 });
 
 // APP css
 gulp.task('appcss', function() {
     return gulp.src('src/css/**/*.css')
-        .pipe(gulp.dest('dist/css/'))
+        .pipe(gulp.dest('dist/example/css/'))
         .pipe(browserSync.reload({
             stream: true
         }));
@@ -98,7 +110,8 @@ gulp.task('serve', ['default'], function() {
 
   browserSync.init(files, {
      server: {
-        baseDir: './dist'
+        baseDir: './dist/',
+        index: 'example/index.html'
      }
   });
 });
