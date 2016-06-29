@@ -3,21 +3,22 @@
 This is a directive wrapper for Amplitude's Javascript SDK. There is a working example that is using ui-router and sends a custom event at each page.
 
 ## Usage
-1. In your HTML, includes the library after including the angular library:
+####1. In your HTML, includes the library after including the angular library:
 
 ```javascript
 <script src="  "bower_components/angular-amplitudejs/dist/lib/amplitude.directive.js">
 ```
 
-2. In the header of your HTML, you can drop the tag with your API Key. If you haven't already, go to http://amplitude.com and register for an account. You will receive an API Key.
+#### 2. In the header of your HTML, you can drop the tag with your API Key. 
+If you haven't already, go to http://amplitude.com and register for an account. You will receive an API Key.
 
 ```html
 <head>
   <amplitudejs apikey="YOUR API KEY"></amplitudejs>
 ```
 
-3. Add 'angular-amplitudejs' to your main module's list of dependencies.
-4. include 'amplitudejsService' in your controller to start logging event via logEvent:
+#### 3. Add 'angular-amplitudejs' to your main module's list of dependencies.
+#### 4. include 'amplitudejsService' in your controller to start logging event via logEvent:
 
 ```javascript
   var Page1Controller = (function () {
