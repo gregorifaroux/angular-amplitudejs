@@ -6,7 +6,7 @@ This is a directive wrapper for Amplitude's Javascript SDK. There is a working e
 In your HTML, includes the library after including the angular library:
 
 ```javascript
-<script src="lib/amplitude.directive.js">
+<script src="  "bower_components/angular-amplitudejs/dist/lib/amplitude.directive.js">
 ```
 
 In the header of your HTML, you can drop the tag with your API Key. If you haven't already, go to http://amplitude.com and register for an account. You will receive an API Key.
