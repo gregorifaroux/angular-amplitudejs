@@ -1,1 +1,21 @@
-<!DOCTYPE html><html lang="en" data-ng-app="amplitudejsdemo"><head><amplitudejs apikey="80670c002958c669424d60a2a2c852e2"></amplitudejs><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><link rel="stylesheet" href="example/css/app.css"></head><body ng-controller="homeController as vm"><h1>{{ vm.title }}</h1><div ui-view="">Loading ...</div><div><a ui-sref="page1">Page 1</a></div><div> <a ui-sref="page2">Page 2</a></div><div><a ng-href="#here" ng-click="vm.sendEvent()">Send event</a></div><script src="example/js/vendor.js"></script><script src="lib/amplitude.directive.js"></script><script src="example/js/app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en" data-ng-app="amplitudejsdemo">
+    <head>
+        <amplitudejs apikey="YOURAPIKEY"></amplitudejs><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"><link rel="stylesheet" href="example/css/app.css"></head>
+    <body ng-controller="homeController as vm">
+        <h1>{{ vm.title }}</h1>
+        <div ui-view="">Loading ...</div>
+        <div>
+            <a ui-sref="page1">Page 1</a>
+        </div>
+        <div>
+            <a ui-sref="page2">Page 2</a>
+        </div>
+        <div>
+            <a ng-href="#here" ng-click="vm.sendEvent()">Send event</a>
+        </div>
+        <script src="example/js/vendor.js"></script>
+        <script src="lib/amplitude.directive.js"></script>
+        <script src="example/js/app.js"></script>
+    </body>
+</html>
