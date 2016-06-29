@@ -1,5 +1,5 @@
 {
-  "name": "amplitude-angularjs",
+  "name": "angular-amplitudejs",
   "description": "Angular wrapper for Amplitude SDK. Amplitude is a web and mobile analytics platform.",
   "main": "gulpfile.js",
   "authors": [
