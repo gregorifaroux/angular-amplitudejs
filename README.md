@@ -36,7 +36,7 @@ If you haven't already, go to http://amplitude.com and register for an account. 
     ;
 ```
 
-#### 5. If you are using TypeScript include the reference and use 'AngularAmplitudejs.AmplitudejsService'
+#### (optional). If you are using TypeScript include the reference and use 'AngularAmplitudejs.AmplitudejsService'
 
 ```javascript
 /// <reference path="../../../../bower_components/angular-amplitudejs/src/lib/amplitude.directive.ts" />
