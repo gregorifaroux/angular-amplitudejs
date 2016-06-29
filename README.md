@@ -36,6 +36,20 @@ If you haven't already, go to http://amplitude.com and register for an account. 
     ;
 ```
 
+#### 5. If you are using TypeScript include the reference and use 'AngularAmplitudejs.AmplitudejsService'
+
+```javascript
+/// <reference path="../../../../bower_components/angular-amplitudejs/src/lib/amplitude.directive.ts" />
+  export class DataAccessService {
+    static $inject = ['amplitudejsService'];
+    private amplitude: AngularAmplitudejs.AmplitudejsService;
+
+    constructor(amplitude:AngularAmplitudejs.AmplitudejsService) {
+      this.amplitude = amplitude;
+    }
+    
+```
+
 ## Logging events using 'amplitudejsService'
 
 - amplitudejsService.logEvent("YOUR CUSTOM EVENT")
